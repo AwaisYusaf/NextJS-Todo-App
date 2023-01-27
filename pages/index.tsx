@@ -3,23 +3,81 @@ import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import {
+  useColorMode,
+  Modal,
+  ModalBody,
+  ModalOverlay,
+  ModalContent,
+  ModalCloseButton,
+  ModalHeader,
+  Input,
+  ModalFooter,
+  Button,
+} from "@chakra-ui/react";
 
-
-const todoLists: { id: number, name: string, todos: string[], createdAt: string }[] = [
-  { id: 1, name: "Grocery", todos: ["Go for a walk", "Buy Some carrots"], createdAt: "1-3-2022" },
-  { id: 2, name: "University", todos: ["Go for laptop repairing"], createdAt: "1-4-2022" },
-  { id: 3, name: "Personal", todos: ["Go for a workout"], createdAt: "1-5-2022" }];
-
+const date = new Date();
+let todoLists: {
+  id: number;
+  name: string;
+  todos: { text: string; status: "complete" | "pending" }[];
+  createdAt: string;
+}[] = [
+  {
+    id: 1,
+    name: "Grocery",
+    todos: [
+      { text: "Go for a walk", status: "pending" },
+      { text: "Buy Some carrots", status: "pending" },
+    ],
+    createdAt: "1-3-2022",
+  },
+  {
+    id: 2,
+    name: "University",
+    todos: [{ text: "Go for laptop repairing", status: "pending" }],
+    createdAt: "1-4-2022",
+  },
+  {
+    id: 3,
+    name: "Personal",
+    todos: [{ text: "Go for a workout", status: "pending" }],
+    createdAt: "1-5-2022",
+  },
+];
 
 const Home: NextPage = () => {
+  // togglecolormode is a function which will be called to change app theme to dark/light mode
+  const { colorMode, toggleColorMode } = useColorMode();
   const [activeTodoId, setActiveTodoId] = useState(todoLists[0].id);
   const [activeTodo, setActiveTodo] = useState(todoLists[0]);
+  const [isModalOpen, setModalOpen] = useState(false);
+  const [inputText, setInputText] = useState("");
+  const [todoModalOpen, setTodoModalOpen] = useState(false);
+
   useEffect(() => {
     let todo = todoLists.filter((todo) => todo.id === activeTodoId)[0];
     if (todo.name) {
       setActiveTodo(todo);
     }
   }, [activeTodoId]);
+  function AddNewList() {
+    const newTodo: {
+      id: number;
+      name: string;
+      todos: { text: string; status: "complete" | "pending" }[];
+      createdAt: string;
+    } = {
+      id: todoLists.length + 1,
+      name: inputText,
+      todos: [],
+      createdAt: date.toLocaleString(),
+    };
+    todoLists.push(newTodo);
+    setInputText("");
+    setModalOpen(false);
+  }
+  function AddNewTodo() {}
   return (
     <div>
       <Head>
@@ -29,48 +87,168 @@ const Home: NextPage = () => {
       </Head>
 
       <main className="flex">
-
         {/* Section for showing todo lists */}
         <section className="flex flex-col w-2/12 border min-h-screen">
           <div className="flex items-center py-3 px-4">
-            <Image src="/assets/user1.jpg" alt="icon" width="35" height="35" className="mr-4 rounded-full shadow-lg" />
+            <Image
+              src="/assets/user1.jpg"
+              alt="icon"
+              width="35"
+              height="35"
+              className="mr-4 rounded-full shadow-lg"
+            />
             <p className="flex-1 font-medium">Awais</p>
-            <Image src="/assets/search.png" width="22" height="22" alt="search-icon" className="cursor-pointer" />
+            <Image
+              src={
+                colorMode == "light"
+                  ? "/assets/search.png"
+                  : "/assets/search-white.png"
+              }
+              width="22"
+              height="22"
+              alt="search-icon"
+              className="cursor-pointer"
+            />
           </div>
           <h1 className="font-medium ml-3 my-4">Your Lists</h1>
-          {
-            todoLists.map((obj: { id: number, todos: string[], name: string, createdAt: string }, i: number) => {
-              return <div onClick={() => setActiveTodoId(obj.id)}
-                className="flex items-center py-3 px-4 cursor-pointer transition hover:bg-gray-200" key={obj.id}>
-                <Image src="/assets/todo1.png" alt="icon" width="25" height="25" className="mr-4" />
-                <p className="flex-1">{obj.name}</p>
-                <p>{obj.todos.length > 0 ? obj.todos.length : ""}</p>
-              </div>
-            })
-          }
-          <div className="flex items-center py-3 px-4 cursor-pointer hover:underline">
-            <Image src="/assets/add.png" alt="icon" width="35" height="35" className="mr-2 rounded-full" />
+          {todoLists.map(
+            (
+              obj: {
+                id: number;
+                todos: { text: string; status: "pending" | "complete" }[];
+                name: string;
+                createdAt: string;
+              },
+              i: number
+            ) => {
+              return (
+                <div
+                  onClick={() => setActiveTodoId(obj.id)}
+                  className="flex items-center py-3 px-4 cursor-pointer transition hover:bg-gray-200"
+                  key={obj.id}
+                >
+                  <Image
+                    src="/assets/todo1.png"
+                    alt="icon"
+                    width="25"
+                    height="25"
+                    className="mr-4"
+                  />
+                  <p className="flex-1">{obj.name}</p>
+                  <p>{obj.todos.length > 0 ? obj.todos.length : ""}</p>
+                </div>
+              );
+            }
+          )}
+          <div
+            className="flex items-center py-3 px-4 cursor-pointer hover:underline"
+            onClick={() => setModalOpen(true)}
+          >
+            <Image
+              src="/assets/add.png"
+              alt="icon"
+              width="35"
+              height="35"
+              className="mr-2 rounded-full"
+            />
             <p className="flex-1 font-medium">Add new list</p>
           </div>
-
         </section>
+
         {/* Section for showing todo items in each list */}
-        <section className="p-12">
-          <div>
-            <h1 className="font-semibold text-3xl">{activeTodo.name}
-            </h1>
-            <p className="font-medium text-gray-400">{activeTodo.createdAt}</p>
+        <section className="p-12 flex-1">
+          <div className="flex justify-between w-full">
+            <div>
+              <h1 className="font-semibold text-3xl">{activeTodo.name}</h1>
+              <p className="font-medium text-gray-400 mt-2 text-xs">
+                {activeTodo.createdAt}
+              </p>
+            </div>
+            <div className="flex items-center">
+              <Button onClick={() => setTodoModalOpen(true)}>Add Todo</Button>
+              <Image
+                src={
+                  colorMode == "light"
+                    ? "/assets/dark.png"
+                    : "/assets/light.png"
+                }
+                alt="toggle-color"
+                width={colorMode == "light" ? "30" : "40"}
+                height={colorMode == "light" ? "30" : "40"}
+                className="ml-3 cursor-pointer transition-all"
+                onClick={toggleColorMode}
+              />
+            </div>
           </div>
           <div className="mt-12">
-            {activeTodo.todos.map((item: string, index: number) => {
-              return <div key={index} className="flex items-center my-2">
-                <Image src="/assets/unchecked.png" alt="unchecked-icon" width="25" height="25"
-                  className="mx-3 cursor-pointer" />
-                <p>{item}</p>
-              </div>
-            })}
+            {activeTodo.todos.map(
+              (
+                item: { text: string; status: "pending" | "complete" },
+                index: number
+              ) => {
+                return (
+                  <div key={index} className="flex items-center my-2">
+                    <Image
+                      src="/assets/unchecked.png"
+                      alt="unchecked-icon"
+                      width="25"
+                      height="25"
+                      className="mx-3 cursor-pointer"
+                    />
+                    <p>{item.text}</p>
+                  </div>
+                );
+              }
+            )}
           </div>
         </section>
+        <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Add New Todo List</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Input
+                placeholder="Enter new list name.."
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button mr={3} onClick={AddNewList}>
+                Add
+              </Button>
+              <Button variant="ghost" onClick={() => setModalOpen(false)}>
+                Cancel
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
+
+        <Modal isOpen={todoModalOpen} onClose={() => setTodoModalOpen(false)}>
+          <ModalOverlay />
+          <ModalContent>
+            <ModalHeader>Add Todo</ModalHeader>
+            <ModalCloseButton />
+            <ModalBody>
+              <Input
+                placeholder="Enter Todo Details..."
+                type="text"
+                value={inputText}
+                onChange={(e) => setInputText(e.target.value)}
+              />
+            </ModalBody>
+            <ModalFooter>
+              <Button mr={3} onClick={AddNewTodo}>
+                Save
+              </Button>
+              <Button variant="ghost" onClick={() => setTodoModalOpen(false)}>
+                Cancel
+              </Button>
+            </ModalFooter>
+          </ModalContent>
+        </Modal>
       </main>
     </div>
   );
