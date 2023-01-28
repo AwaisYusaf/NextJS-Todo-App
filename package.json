@@ -9,7 +9,11 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@chakra-ui/react": "^2.4.9",
+    "@emotion/react": "^11.10.5",
+    "@emotion/styled": "^11.10.5",
     "@reduxjs/toolkit": "^1.9.1",
+    "framer-motion": "^8.5.3",
     "next": "13.1.2",
     "next-redux-wrapper": "^8.1.0",
     "react": "18.2.0",

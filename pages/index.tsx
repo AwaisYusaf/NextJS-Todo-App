@@ -2,7 +2,7 @@ import type { NextPage } from "next";
 import Head from "next/head";
 import Image from "next/image";
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useContext } from "react";
 import {
   useColorMode,
   Modal,
@@ -15,6 +15,7 @@ import {
   ModalFooter,
   Button,
 } from "@chakra-ui/react";
+import { MyContext } from "./../data/AppContext";
 
 const date = new Date();
 let todoLists: {
@@ -48,36 +49,47 @@ let todoLists: {
 
 const Home: NextPage = () => {
   // togglecolormode is a function which will be called to change app theme to dark/light mode
+  const { data, dispatch } = useContext(MyContext);
   const { colorMode, toggleColorMode } = useColorMode();
-  const [activeTodoId, setActiveTodoId] = useState(todoLists[0].id);
-  const [activeTodo, setActiveTodo] = useState(todoLists[0]);
+  const [activeTodoId, setActiveTodoId] = useState(data[0].id);
+  const [activeTodo, setActiveTodo] = useState(data[0]);
   const [isModalOpen, setModalOpen] = useState(false);
   const [inputText, setInputText] = useState("");
   const [todoModalOpen, setTodoModalOpen] = useState(false);
 
   useEffect(() => {
-    let todo = todoLists.filter((todo) => todo.id === activeTodoId)[0];
+    let todo = data.filter((todo) => todo.id === activeTodoId)[0];
     if (todo.name) {
       setActiveTodo(todo);
     }
   }, [activeTodoId]);
   function AddNewList() {
-    const newTodo: {
-      id: number;
-      name: string;
-      todos: { text: string; status: "complete" | "pending" }[];
-      createdAt: string;
-    } = {
-      id: todoLists.length + 1,
-      name: inputText,
-      todos: [],
-      createdAt: date.toLocaleString(),
-    };
-    todoLists.push(newTodo);
-    setInputText("");
-    setModalOpen(false);
+    if (dispatch && inputText) {
+      dispatch({ type: "CREATE_NEW_LIST", payload: inputText });
+      setInputText("");
+      setModalOpen(false);
+    }
   }
-  function AddNewTodo() {}
+  function AddNewTodo() {
+    if (dispatch && inputText) {
+      dispatch({
+        type: "ADD_NEW_TODO",
+        payload: { id: activeTodoId, text: inputText },
+      });
+      setInputText("");
+      setTodoModalOpen(false);
+    }
+  }
+  function markComplete(index: number) {
+    if (dispatch) {
+      dispatch({ type: "MARK_COMPLETE", payload: { id: activeTodoId, index } });
+    }
+  }
+  function markPending(index: number) {
+    if (dispatch) {
+      dispatch({ type: "MARK_PENDING", payload: { id: activeTodoId, index } });
+    }
+  }
   return (
     <div>
       <Head>
@@ -111,7 +123,7 @@ const Home: NextPage = () => {
             />
           </div>
           <h1 className="font-medium ml-3 my-4">Your Lists</h1>
-          {todoLists.map(
+          {data.map(
             (
               obj: {
                 id: number;
@@ -180,26 +192,100 @@ const Home: NextPage = () => {
               />
             </div>
           </div>
-          <div className="mt-12">
+          <div className="mt-12 h-1/2">
             {activeTodo.todos.map(
               (
                 item: { text: string; status: "pending" | "complete" },
                 index: number
               ) => {
-                return (
-                  <div key={index} className="flex items-center my-2">
+                return item.status == "pending" ? (
+                  <div
+                    key={index}
+                    className="flex items-center px-3 py-2 my-2 w-6/12 cursor-pointer"
+                  >
                     <Image
                       src="/assets/unchecked.png"
                       alt="unchecked-icon"
                       width="25"
                       height="25"
                       className="mx-3 cursor-pointer"
+                      onClick={() => {
+                        markComplete(index);
+                      }}
                     />
-                    <p>{item.text}</p>
+                    <p className="w-full">{item.text}</p>
+                    <Image
+                      src="/assets/delete.png"
+                      alt="icon"
+                      width="30"
+                      height="30"
+                      className="cursor-pointer"
+                      onClick={() =>
+                        dispatch
+                          ? dispatch({
+                              type: "DELETE_A_TODO",
+                              payload: { id: activeTodoId, index },
+                            })
+                          : {}
+                      }
+                    />
                   </div>
+                ) : (
+                  ""
                 );
               }
             )}
+            {/* Completed Todos */}
+            <h2 className="mt-4 font-semibold">Completed</h2>
+            {!activeTodo.todos.find((todo) => todo.status == "complete") && (
+              <p className="w-full text-center text-gray-500 font-semibold mt-12">
+                No completed tasks
+              </p>
+            )}
+            <div style={{ minHeight: "30vh" }}>
+              {activeTodo.todos.map(
+                (
+                  item: { text: string; status: "pending" | "complete" },
+                  index: number
+                ) => {
+                  return item.status === "complete" ? (
+                    <div
+                      key={index}
+                      className="flex items-center px-3 py-2 my-2 w-6/12"
+                    >
+                      <Image
+                        src="/assets/checked.png"
+                        alt="unchecked-icon"
+                        width="25"
+                        height="25"
+                        className="mx-3 cursor-pointer"
+                        onClick={() => markPending(index)}
+                      />
+                      <p className="w-full line-through text-gray-500">
+                        {item.text}
+                      </p>
+                      <Image
+                        src="/assets/delete.png"
+                        alt="icon"
+                        width="30"
+                        height="30"
+                        className="cursor-pointer"
+                        onClick={() =>
+                          dispatch
+                            ? dispatch({
+                                type: "DELETE_A_TODO",
+                                payload: { id: activeTodoId, index },
+                              })
+                            : {}
+                        }
+                      />
+                    </div>
+                  ) : (
+                    ""
+                  );
+                }
+              )}
+            </div>
           </div>
         </section>
         <Modal isOpen={isModalOpen} onClose={() => setModalOpen(false)}>
