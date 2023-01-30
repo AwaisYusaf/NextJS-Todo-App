@@ -16,37 +16,6 @@ import {
   Button,
 } from "@chakra-ui/react";
 import { MyContext } from "./../data/AppContext";
-
-const date = new Date();
-let todoLists: {
-  id: number;
-  name: string;
-  todos: { text: string; status: "complete" | "pending" }[];
-  createdAt: string;
-}[] = [
-  {
-    id: 1,
-    name: "Grocery",
-    todos: [
-      { text: "Go for a walk", status: "pending" },
-      { text: "Buy Some carrots", status: "pending" },
-    ],
-    createdAt: "1-3-2022",
-  },
-  {
-    id: 2,
-    name: "University",
-    todos: [{ text: "Go for laptop repairing", status: "pending" }],
-    createdAt: "1-4-2022",
-  },
-  {
-    id: 3,
-    name: "Personal",
-    todos: [{ text: "Go for a workout", status: "pending" }],
-    createdAt: "1-5-2022",
-  },
-];
-
 const Home: NextPage = () => {
   // togglecolormode is a function which will be called to change app theme to dark/light mode
   const { data, dispatch } = useContext(MyContext);
@@ -100,14 +69,14 @@ const Home: NextPage = () => {
 
       <main className="flex">
         {/* Section for showing todo lists */}
-        <section className="flex flex-col w-2/12 border min-h-screen">
-          <div className="flex items-center py-3 px-4">
+        <section className="flex flex-col w-2/12 border min-h-screen max-[800px]:w-28">
+          <div className="flex items-center py-3 px-4 max-[800px]:flex-col ">
             <Image
               src="/assets/user1.jpg"
               alt="icon"
               width="35"
               height="35"
-              className="mr-4 rounded-full shadow-lg"
+              className="mr-4 rounded-full shadow-lg max-[800px]:mr-0"
             />
             <p className="flex-1 font-medium">Awais</p>
             <Image
@@ -119,7 +88,7 @@ const Home: NextPage = () => {
               width="22"
               height="22"
               alt="search-icon"
-              className="cursor-pointer"
+              className="cursor-pointer max-[800px]:hidden"
             />
           </div>
           <h1 className="font-medium ml-3 my-4">Your Lists</h1>
@@ -144,7 +113,7 @@ const Home: NextPage = () => {
                     alt="icon"
                     width="25"
                     height="25"
-                    className="mr-4"
+                    className="mr-4 max-[800px]:hidden"
                   />
                   <p className="flex-1">{obj.name}</p>
                   <p>{obj.todos.length > 0 ? obj.todos.length : ""}</p>
@@ -163,7 +132,9 @@ const Home: NextPage = () => {
               height="35"
               className="mr-2 rounded-full"
             />
-            <p className="flex-1 font-medium">Add new list</p>
+            <p className="flex-1 font-medium max-[800px]:hidden">
+              Add new list
+            </p>
           </div>
         </section>
 
@@ -176,8 +147,13 @@ const Home: NextPage = () => {
                 {activeTodo.createdAt}
               </p>
             </div>
-            <div className="flex items-center">
-              <Button onClick={() => setTodoModalOpen(true)}>Add Todo</Button>
+            <div className="flex items-center max-[800px]:flex-col-reverse">
+              <Button
+                onClick={() => setTodoModalOpen(true)}
+                className="max-[800px]:-mb-12 max-[800px]:mt-6"
+              >
+                Add Todo
+              </Button>
               <Image
                 src={
                   colorMode == "light"
@@ -187,7 +163,7 @@ const Home: NextPage = () => {
                 alt="toggle-color"
                 width={colorMode == "light" ? "30" : "40"}
                 height={colorMode == "light" ? "30" : "40"}
-                className="ml-3 cursor-pointer transition-all"
+                className="ml-3 cursor-pointer transition-all max-[800px]:-mt-12 max-[800px]:-mr-16"
                 onClick={toggleColorMode}
               />
             </div>
@@ -201,7 +177,8 @@ const Home: NextPage = () => {
                 return item.status == "pending" ? (
                   <div
                     key={index}
-                    className="flex items-center px-3 py-2 my-2 w-6/12 cursor-pointer"
+                    className="flex items-center px-3 py-2 my-2 w-6/12 cursor-pointer 
+                    max-[800px]:w-full"
                   >
                     <Image
                       src="/assets/unchecked.png"
@@ -251,7 +228,7 @@ const Home: NextPage = () => {
                   return item.status === "complete" ? (
                     <div
                       key={index}
-                      className="flex items-center px-3 py-2 my-2 w-6/12"
+                      className="flex items-center px-3 py-2 my-2 w-6/12 max-[800px]:w-full"
                     >
                       <Image
                         src="/assets/checked.png"
